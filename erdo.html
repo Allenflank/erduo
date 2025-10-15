@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>耳朵 - 白昼聆夏</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // 暖黄色作为主色调
+                        primary: '#FBBF24',
+                        // 豆绿色作为辅助色
+                        secondary: '#84CC16',
+                        accent: '#EC4899',
+                        light: '#FEFCE8',
+                        dark: '#4B5563',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                        'hover': '0 8px 30px rgba(0, 0, 0, 0.1)',
+                    }
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto { content-visibility: auto; }
+            .bg-gradient-summer { background: linear-gradient(135deg, #FEFCE8 0%, #FDF7C3 100%); }
+            .text-shadow { text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+            .transition-custom { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-summer min-h-screen font-sans text-dark">
+    <!-- 顶部导航 -->
+    <header class="py-4 px-6 md:px-12 bg-white/70 backdrop-blur-sm shadow-soft sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-headphones text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">耳朵</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="erdo.html" class="text-primary font-medium">首页</a>
+                <a href="voice.html" class="text-gray-600 hover:text-primary transition-custom">声音广场</a>
+            </nav>
+            <div class="md:hidden">
+                <a href="voice.html" class="text-gray-600 hover:text-primary transition-custom">
+                    <i class="fa fa-users text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-8 md:py-12 max-w-6xl">
+        <section class="text-center mb-12">
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4 text-shadow">声音，也能如此多彩</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">输入文本或上传音频，选择喜欢的声线，调整参数，体验声音的奇妙变化</p>
+        </section>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左侧输入区 -->
+            <div class="lg:col-span-1 space-y-8">
+                <!-- 文本输入 -->
+                <section class="bg-white rounded-xl p-6 shadow-soft transition-custom hover:shadow-hover">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-comment text-primary mr-2"></i>文本输入
+                    </h3>
+                    <textarea 
+                        id="text-input" 
+                        class="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary transition-custom resize-none h-32"
+                        placeholder="请输入你想转换的文字...&#10;例如：你好，欢迎使用白昼聆夏"
+                    ></textarea>
+                    <p class="text-xs text-gray-500 mt-2">输入文本将转换为选定声线的音频</p>
+                </section>
+
+                <!-- 音频上传 -->
+                <section class="bg-white rounded-xl p-6 shadow-soft transition-custom hover:shadow-hover">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-upload text-primary mr-2"></i>音频上传
+                    </h3>
+                    <label for="audio-upload" class="block text-center py-8 border-2 border-dashed border-gray-200 rounded-lg hover:border-primary/50 transition-custom cursor-pointer">
+                        <input id="audio-upload" type="file" accept="audio/*" class="hidden" />
+                        <i class="fa fa-music text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-500">点击或拖拽文件到此处上传</p>
+                        <p class="text-xs text-gray-400 mt-1">支持格式：MP3, WAV, OGG</p>
+                    </label>
+                    <!-- 上传预览 -->
+                    <div id="uploaded-audio-preview" class="hidden mt-4 p-3 bg-gray-50 rounded-lg">
+                        <p class="text-sm font-medium mb-2" id="uploaded-filename">音频文件名</p>
+                        <audio id="uploaded-audio-player" controls class="w-full text-sm">您的浏览器不支持音频播放</audio>
+                    </div>
+                </section>
+
+                <!-- 声线选择 -->
+                <section class="bg-white rounded-xl p-6 shadow-soft transition-custom hover:shadow-hover">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-user-circle text-primary mr-2"></i>声线选择
+                    </h3>
+                    <div class="grid grid-cols-1 gap-3" id="voice-selector">
+                        <div class="voice-option p-4 border border-gray-200 rounded-lg cursor-pointer transition-custom hover:border-primary flex justify-between items-center" data-voice="summer">
+                            <div><div class="font-medium">夏以昼</div><div class="text-sm text-gray-500">清澈明亮的少年音</div></div>
+                            <div class="selected-indicator hidden text-primary"><i class="fa fa-check-circle"></i> 已选择</div>
+                        </div>
+                        <div class="voice-option p-4 border border-gray-200 rounded-lg cursor-pointer transition-custom hover:border-primary flex justify-between items-center" data-voice="female">
+                            <div><div class="font-medium">温柔女声</div><div class="text-sm text-gray-500">温婉柔和的女性声线</div></div>
+                            <div class="selected-indicator hidden text-primary"><i class="fa fa-check-circle"></i> 已选择</div>
+                        </div>
+                        <div class="voice-option p-4 border border-gray-200 rounded-lg cursor-pointer transition-custom hover:border-primary flex justify-between items-center" data-voice="male">
+                            <div><div class="font-medium">沉稳男声</div><div class="text-sm text-gray-500">成熟稳重的男性声线</div></div>
+                            <div class="selected-indicator hidden text-primary"><i class="fa fa-check-circle"></i> 已选择</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 右侧参数与输出 -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- 参数调节 -->
+                <section class="bg-white rounded-xl p-6 shadow-soft transition-custom hover:shadow-hover">
+                    <h3 class="text-lg font-semibold mb-6 flex items-center">
+                        <i class="fa fa-sliders text-primary mr-2"></i>参数调节
+                    </h3>
+                    <!-- 音高 -->
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2">
+                            <label class="font-medium">音高 (Pitch)</label>
+                            <span id="pitch-value" class="text-sm text-primary">0</span>
+                        </div>
+                        <input type="range" min="-10" max="10" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary" id="pitch-slider">
+                        <div class="mt-1 text-xs text-gray-500 flex justify-between"><span>低沉</span><span>正常</span><span>高亢</span></div>
+                        <div id="pitch-message" class="mt-2 text-sm text-gray-600">音高参数：已设置为 0</div>
+                    </div>
+                    <!-- 音色 -->
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2">
+                            <label class="font-medium">音色 (Formant)</label>
+                            <span id="formant-value" class="text-sm text-primary">5</span>
+                        </div>
+                        <input type="range" min="0" max="10" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary" id="formant-slider">
+                        <div class="mt-1 text-xs text-gray-500 flex justify-between"><span>低沉</span><span>自然</span><span>明亮</span></div>
+                        <div id="formant-message" class="mt-2 text-sm text-gray-600">音色参数：已设置为 5</div>
+                    </div>
+                    <!-- 语速 -->
+                    <div class="mb-6">
+                        <div class="flex justify-between mb-2">
+                            <label class="font-medium">语速 (Speed)</label>
+                            <span id="speed-value" class="text-sm text-primary">1.0x</span>
+                        </div>
+                        <input type="range" min="0.5" max="2.0" step="0.1" value="1.0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary" id="speed-slider">
+                        <div class="mt-1 text-xs text-gray-500 flex justify-between"><span>慢速</span><span>正常</span><span>快速</span></div>
+                        <div id="speed-message" class="mt-2 text-sm text-gray-600">语速参数：已设置为 1.0x</div>
+                    </div>
+                    <!-- 情绪 -->
+                    <div>
+                        <label class="font-medium block mb-2">情绪滤镜</label>
+                        <div class="grid grid-cols-3 gap-3" id="emotion-selector">
+                            <div class="emotion-option p-3 border border-gray-200 rounded-lg text-center cursor-pointer transition-custom hover:border-primary" data-emotion="happy">
+                                <i class="fa fa-smile-o text-xl mb-1"></i><div class="text-sm">愉快</div>
+                            </div>
+                            <div class="emotion-option p-3 border border-gray-200 rounded-lg text-center cursor-pointer transition-custom hover:border-primary" data-emotion="sad">
+                                <i class="fa fa-frown-o text-xl mb-1"></i><div class="text-sm">悲伤</div>
+                            </div>
+                            <div class="emotion-option p-3 border border-gray-200 rounded-lg text-center cursor-pointer transition-custom hover:border-primary" data-emotion="calm">
+                                <i class="fa fa-meh-o text-xl mb-1"></i><div class="text-sm">冷静</div>
+                            </div>
+                        </div>
+                        <div id="emotion-message" class="mt-2 text-sm text-gray-600">情绪参数：未选择</div>
+                    </div>
+                </section>
+
+                <!-- 输出结果 -->
+                <section class="bg-white rounded-xl p-6 shadow-soft transition-custom hover:shadow-hover">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center">
+                        <i class="fa fa-volume-up text-primary mr-2"></i>输出结果
+                    </h3>
+                    <div class="flex flex-wrap gap-3 mb-4">
+                        <button id="generate-btn" class="bg-primary hover:bg-primary/90 text-white py-3 px-6 rounded-lg font-medium transition-custom flex items-center justify-center">
+                            <i class="fa fa-magic mr-2"></i> 生成音频
+                        </button>
+                        <button id="share-btn" class="bg-secondary hover:bg-secondary/90 text-white py-3 px-6 rounded-lg font-medium transition-custom flex items-center justify-center hidden">
+                            <i class="fa fa-share-alt mr-2"></i> 分享到广场
+                        </button>
+                    </div>
+
+                    <!-- 加载动画 -->
+                    <div id="loading-animation" class="hidden flex justify-center py-8">
+                        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+                        <div class="ml-4 text-gray-600">正在生成...</div>
+                    </div>
+
+                    <!-- 结果卡片 -->
+                    <div id="result-card" class="hidden">
+                        <div class="border border-green-200 bg-green-50 rounded-xl p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-green-100 p-2 rounded-full mr-3"><i class="fa fa-check text-green-600"></i></div>
+                                <h4 class="font-semibold text-green-800">生成完成！</h4>
+                            </div>
+                            <!-- 音频播放与下载 -->
+                            <div class="mb-4">
+                                <p class="text-sm text-gray-600 mb-2" id="result-description">处理后的音频：</p>
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <audio id="result-audio" controls class="flex-grow">您的浏览器不支持音频播放
+                                    <a id="download-audio" href="#" download="processed_audio.mp3" class="bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-lg text-sm flex items-center justify-center transition-custom whitespace-nowrap">
+                                        <i class="fa fa-download mr-2"></i> 下载音频
+                                    </a>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-600">
+                                <i class="fa fa-info-circle text-primary mr-1"></i>
+                                <span id="result-info">音频已根据您的设置完成处理</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 未生成提示 -->
+                    <div id="no-result-message" class="text-center py-12 text-gray-500">
+                        <i class="fa fa-headphones text-4xl mb-3 opacity-50"></i>
+                        <p>请输入文本或上传音频，设置参数后点击生成按钮</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="mt-16 py-6 px-4 bg-white/70 backdrop-blur-sm">
+        <div class="container mx-auto text-center text-gray-500 text-sm">
+            <p>© 2025 白昼聆夏 - 耳朵项目 | 声音转换技术展示平台</p>
+        </div>
+    </footer>
+
+    <!-- 提示框 -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-dark text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center z-50">
+        <i class="fa fa-check-circle mr-2"></i>
+        <span id="toast-message">操作成功</span>
+    </div>
+
+    <!-- 分享弹窗 -->
+    <div id="share-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">分享到声音广场</h3>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-800"><i class="fa fa-times text-xl"></i></button>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">作品标题</label>
+                <input type="text" id="share-title" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-secondary/50 focus:border-secondary" placeholder="给你的作品起个名字吧">
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-1">作品描述</label>
+                <textarea id="share-description" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-secondary/50 focus:border-secondary h-24" placeholder="描述一下你的作品..."></textarea>
+            </div>
+            <button id="confirm-share" class="w-full bg-secondary hover:bg-secondary/90 text-white py-3 rounded-lg font-medium transition-custom">
+                确认分享
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. 元素获取
+            const audioUpload = document.getElementById('audio-upload');
+            const uploadedAudioPreview = document.getElementById('uploaded-audio-preview');
+            const uploadedFilename = document.getElementById('uploaded-filename');
+            const uploadedAudioPlayer = document.getElementById('uploaded-audio-player');
+            const voiceOptions = document.querySelectorAll('.voice-option');
+            const emotionOptions = document.querySelectorAll('.emotion-option');
+            const pitchSlider = document.getElementById('pitch-slider');
+            const pitchValue = document.getElementById('pitch-value');
+            const pitchMessage = document.getElementById('pitch-message');
+            const formantSlider = document.getElementById('formant-slider');
+            const formantValue = document.getElementById('formant-value');
+            const formantMessage = document.getElementById('formant-message');
+            const speedSlider = document.getElementById('speed-slider');
+            const speedValue = document.getElementById('speed-value');
+            const speedMessage = document.getElementById('speed-message');
+            const emotionMessage = document.getElementById('emotion-message');
+            const generateBtn = document.getElementById('generate-btn');
+            const shareBtn = document.getElementById('share-btn');
+            const loadingAnimation = document.getElementById('loading-animation');
+            const resultCard = document.getElementById('result-card');
+            const noResultMessage = document.getElementById('no-result-message');
+            const resultDescription = document.getElementById('result-description');
+            const resultInfo = document.getElementById('result-info');
+            const resultAudio = document.getElementById('result-audio');
+            const downloadAudio = document.getElementById('download-audio');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            const textInput = document.getElementById('text-input');
+            const shareModal = document.getElementById('share-modal');
+            const closeModal = document.getElementById('close-modal');
+            const confirmShare = document.getElementById('confirm-share');
+            const shareTitle = document.getElementById('share-title');
+            const shareDescription = document.getElementById('share-description');
+
+            // 2. 状态变量
+            let uploadedAudioFile = null;
+            let audioContext = null;
+            let speechSynthesis = window.speechSynthesis || null; // 文本转语音核心对象
+            let currentUtterance = null; // 当前朗读对象
+            let generatedAudioUrl = null; // 存储生成的音频URL用于分享
+
+            // 3. 初始化：默认选中第一个声线
+            if (voiceOptions.length > 0) voiceOptions[0].click();
+
+            // 4. 音频上传处理
+            audioUpload.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    uploadedAudioFile = e.target.files[0];
+                    const audioUrl = URL.createObjectURL(uploadedAudioFile);
+                    
+                    // 显示预览并设置音频源
+                    uploadedFilename.textContent = uploadedAudioFile.name;
+                    uploadedAudioPlayer.src = audioUrl;
+                    uploadedAudioPreview.classList.remove('hidden');
+                    
+                    // 同时更新结果音频的下载链接
+                    downloadAudio.href = audioUrl;
+                    generatedAudioUrl = audioUrl;
+                    showToast(`已上传: ${uploadedAudioFile.name}`);
+                }
+            });
+
+            // 5. 声线选择处理
+            voiceOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    voiceOptions.forEach(opt => {
+                        opt.classList.remove('border-primary', 'bg-primary/5');
+                        opt.querySelector('.selected-indicator').classList.add('hidden');
+                    });
+                    this.classList.add('border-primary', 'bg-primary/5');
+                    this.querySelector('.selected-indicator').classList.remove('hidden');
+                    
+                    // 如果已生成音频，更新声线并重新播放
+                    if (!resultCard.classList.contains('hidden')) updateAudioWithCurrentSettings();
+                });
+            });
+
+            // 6. 情绪选择处理
+            emotionOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    emotionOptions.forEach(opt => opt.classList.remove('border-primary', 'bg-primary/5'));
+                    this.classList.add('border-primary', 'bg-primary/5');
+                    
+                    const emotionMap = { happy: '愉快', sad: '悲伤', calm: '冷静' };
+                    const emotion = this.getAttribute('data-emotion');
+                    emotionMessage.textContent = `情绪参数：已设置为 ${emotionMap[emotion]}`;
+                    
+                    if (!resultCard.classList.contains('hidden')) updateAudioWithCurrentSettings();
+                });
+            });
+
+            // 7. 参数调节实时生效
+            pitchSlider.addEventListener('input', function() {
+                pitchValue.textContent = this.value;
+                pitchMessage.textContent = `音高参数：已设置为 ${this.value}`;
+                if (!resultCard.classList.contains('hidden')) applyParamsToAudio();
+            });
+
+            formantSlider.addEventListener('input', function() {
+                formantValue.textContent = this.value;
+                formantMessage.textContent = `音色参数：已设置为 ${this.value}`;
+                if (!resultCard.classList.contains('hidden')) applyParamsToAudio();
+            });
+
+            speedSlider.addEventListener('input', function() {
+                speedValue.textContent = `${this.value}x`;
+                speedMessage.textContent = `语速参数：已设置为 ${this.value}x`;
+                if (!resultCard.classList.contains('hidden')) applyParamsToAudio();
+            });
+
+            // 8. 生成音频按钮
+            generateBtn.addEventListener('click', function() {
+                const textContent = textInput.value.trim();
+                // 验证输入
+                if (!textContent && !uploadedAudioFile) {
+                    showToast('请输入文本或上传音频', 'warning');
+                    return;
+                }
+                if (textContent && !getSelectedVoice()) {
+                    showToast('请选择一种声线', 'warning');
+                    return;
+                }
+
+                // 显示加载状态
+                loadingAnimation.classList.remove('hidden');
+                resultCard.classList.add('hidden');
+                noResultMessage.classList.add('hidden');
+                shareBtn.classList.add('hidden');
+
+                // 模拟生成延迟
+                setTimeout(() => {
+                    loadingAnimation.classList.add('hidden');
+                    resultCard.classList.remove('hidden');
+                    shareBtn.classList.remove('hidden');
+
+                    if (uploadedAudioFile) {
+                        // 场景1：上传音频
+                        const audioUrl = URL.createObjectURL(uploadedAudioFile);
+                        resultAudio.src = audioUrl;
+                        downloadAudio.href = audioUrl;
+                        generatedAudioUrl = audioUrl;
+                        resultDescription.textContent = `基于 "${uploadedAudioFile.name}" 处理的音频：`;
+                        
+                        // 初始化音频上下文
+                        initAudioContext();
+                        applyParamsToAudio();
+                    } else {
+                        // 场景2：文本输入
+                        if (!speechSynthesis) {
+                            showToast('您的浏览器不支持文本转语音功能', 'warning');
+                            // 降级：使用示例音频
+                            resultAudio.src = "https://cdn.pixabay.com/download/audio/2022/03/15/audio_951073038f.mp3?filename=gentle-rain-ambient-110806.mp3";
+                            downloadAudio.href = resultAudio.src;
+                            generatedAudioUrl = resultAudio.src;
+                        } else {
+                            // 停止当前朗读
+                            if (currentUtterance) speechSynthesis.cancel(currentUtterance);
+                            
+                            // 创建新的朗读对象
+                            currentUtterance = new SpeechSynthesisUtterance(textContent);
+                            const selectedVoice = getSelectedVoice();
+                            
+                            // 设置声线参数
+                            switch(selectedVoice) {
+                                case 'summer': // 少年音：偏高、稍快
+                                    currentUtterance.pitch = 1.3;
+                                    currentUtterance.rate = 1.1;
+                                    break;
+                                case 'female': // 温柔女声：高、稍慢
+                                    currentUtterance.pitch = 1.5;
+                                    currentUtterance.rate = 0.9;
+                                    break;
+                                case 'male': // 沉稳男声：低、慢
+                                    currentUtterance.pitch = 0.8;
+                                    currentUtterance.rate = 0.8;
+                                    break;
+                            }
+                            
+                            // 应用初始参数
+                            applyParamsToAudio();
+                            
+                            // 朗读
+                            currentUtterance.onend = function() {
+                                showToast('文本朗读完成');
+                            };
+                            speechSynthesis.speak(currentUtterance);
+                            
+                            // 使用示例音频作为下载源
+                            resultAudio.src = "https://cdn.pixabay.com/download/audio/2022/03/15/audio_951073038f.mp3?filename=gentle-rain-ambient-110806.mp3";
+                            downloadAudio.href = resultAudio.src;
+                            generatedAudioUrl = resultAudio.src;
+                        }
+                        resultDescription.textContent = `文本转换为 "${getVoiceName(getSelectedVoice())}" 的音频：`;
+                    }
+
+                    // 更新结果信息
+                    updateAudioWithCurrentSettings();
+                }, 1500);
+            });
+
+            // 10. 分享功能
+            shareBtn.addEventListener('click', function() {
+                // 重置表单
+                shareTitle.value = '';
+                shareDescription.value = '';
+                // 显示弹窗
+                shareModal.classList.remove('hidden');
+            });
+
+            closeModal.addEventListener('click', function() {
+                shareModal.classList.add('hidden');
+            });
+
+            confirmShare.addEventListener('click', function() {
+                const title = shareTitle.value.trim();
+                const description = shareDescription.value.trim();
+                
+                if (!title) {
+                    showToast('请输入作品标题', 'warning');
+                    return;
+                }
+                
+                // 保存分享的作品到localStorage
+                const selectedVoice = getSelectedVoice();
+                const voiceName = getVoiceName(selectedVoice);
+                
+                const newWork = {
+                    id: Date.now(),
+                    title: title,
+                    description: description || '这是我的声音作品',
+                    audioUrl: generatedAudioUrl,
+                    voice: voiceName,
+                    author: '我',
+                    avatar: 'https://picsum.photos/id/1000/40/40',
+                    timestamp: new Date().toISOString(),
+                    likes: 0,
+                    comments: 0
+                };
+                
+                // 从localStorage获取现有作品
+                let works = JSON.parse(localStorage.getItem('soundWorks') || '[]');
+                // 添加新作品到前面
+                works.unshift(newWork);
+                // 保存回localStorage
+                localStorage.setItem('soundWorks', JSON.stringify(works));
+                
+                // 关闭弹窗并提示
+                shareModal.classList.add('hidden');
+                showToast('作品分享成功！即将跳转到声音广场');
+                
+                // 跳转到声音广场
+                setTimeout(() => {
+                    window.location.href = 'sound-plaza.html';
+                }, 1500);
+            });
+
+            // 点击弹窗外部关闭
+            shareModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    shareModal.classList.add('hidden');
+                }
+            });
+
+            // 11. 辅助函数：初始化音频上下文
+            function initAudioContext() {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            // 12. 辅助函数：将参数应用到音频
+            function applyParamsToAudio() {
+                const pitch = parseInt(pitchSlider.value);
+                const speed = parseFloat(speedSlider.value);
+                
+                // 处理上传的音频
+                if (uploadedAudioFile && audioContext) {
+                    // 通过音频元素直接调节播放速率
+                    if (resultAudio.playbackRate) {
+                        // 音高：通过播放速率模拟
+                        const pitchMultiplier = 1 + (pitch * 0.05);
+                        // 语速：直接使用设置值，与音高叠加
+                        resultAudio.playbackRate = pitchMultiplier * speed;
+                    }
+                }
+
+                // 处理文本转语音
+                if (currentUtterance && speechSynthesis) {
+                    currentUtterance.rate = speed; // 语速
+                    currentUtterance.pitch = 1 + (pitch * 0.05); // 音高
+                }
+            }
+
+            // 13. 辅助函数：更新结果信息
+            function updateAudioWithCurrentSettings() {
+                const voice = getSelectedVoice();
+                const voiceName = getVoiceName(voice);
+                const pitch = pitchSlider.value;
+                const formant = formantSlider.value;
+                const speed = speedSlider.value;
+                const emotion = getSelectedEmotion();
+                const emotionText = emotion ? { happy: '愉快', sad: '悲伤', calm: '冷静' }[emotion] : '';
+
+                resultInfo.textContent = `已应用声线: ${voiceName}, 音高: ${pitch}, 音色: ${formant}, 语速: ${speed}x${emotionText ? `, 情绪: ${emotionText}` : ''}`;
+            }
+
+            // 14. 辅助函数：获取选中的声线/情绪/声线名称
+            function getSelectedVoice() {
+                let voice = null;
+                voiceOptions.forEach(opt => {
+                    if (opt.classList.contains('border-primary')) voice = opt.getAttribute('data-voice');
+                });
+                return voice;
+            }
+
+            function getSelectedEmotion() {
+                let emotion = null;
+                emotionOptions.forEach(opt => {
+                    if (opt.classList.contains('border-primary')) emotion = opt.getAttribute('data-emotion');
+                });
+                return emotion;
+            }
+
+            function getVoiceName(voiceKey) {
+                const voiceElement = document.querySelector(`.voice-option[data-voice="${voiceKey}"] .font-medium`);
+                return voiceElement ? voiceElement.textContent : '';
+            }
+
+            // 15. 辅助函数：显示提示框
+            function showToast(message, type = 'success') {
+                toastMessage.textContent = message;
+                if (type === 'warning') {
+                    toast.classList.remove('bg-dark');
+                    toast.classList.add('bg-amber-600');
+                    toast.querySelector('i').className = 'fa fa-exclamation-circle mr-2';
+                } else {
+                    toast.classList.remove('bg-amber-600');
+                    toast.classList.add('bg-dark');
+                    toast.querySelector('i').className = 'fa fa-check-circle mr-2';
+                }
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            }
+
+            // 16. 初始化音频上下文
+            document.body.addEventListener('click', function() {
+                if (!audioContext) initAudioContext();
+            }, { once: true });
+        });
+    </script>
+</body>
+</html>
